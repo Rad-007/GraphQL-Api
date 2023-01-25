@@ -9,7 +9,7 @@ from pymongo import MongoClient
 import os
 
 # Replace YOUR_ACCESS_TOKEN with a valid access token
-access_token = os.environ("access_token")
+
 
 from datetime import datetime, timedelta
 from flask import Flask, request
@@ -19,40 +19,12 @@ app = Flask(__name__)
 @app.route('/engagement', methods=['GET'])
 
 
-def engagement():
+def engagement(user_id,access_token):
 
 # Replace USER_ID with the ID of the user you want to retrieve information about
     
 
-    url = "https://graph.facebook.com/v10.0/me?access_token=" + access_token
-
-    response = requests.get(url)
-
-    # Print the response from the API
-    data=response.json()
-    print(data)
-
-    user_id =data['id']
-
-    url="https://graph.facebook.com/"+user_id+"metadata=1&access_token="+access_token
-
-    response=requests.get(url)
-
-    data2=response.json()
-
-    print(data2)
-
-
-
-    client = MongoClient()
-
-# Select the database
-    db = client.user_database
-
-    # Create a new collection (table)
-    users = db.users
-    users.insert_one(data)
-
+    
     
     
     
@@ -94,29 +66,18 @@ def engagement():
     
 
 
-    client2=MongoClient()
+    client=MongoClient()
 
     db2 = client.engage_database
 
     # Create a new collection (table)
-    users = db2.users
+    users = db2.engagements
     users.insert_one(latest_engagements)
     
     return(latest_engagements)
 
 
 
-url = f'https://graph.facebook.com/debug_token?input_token={access_token}&access_token={access_token}'
-response = requests.get(url)
-
-# Get the JSON data from the response
-data = response.json()
-
-# Check if the access token is valid
-if data['data']['is_valid']:
-    print('Access token is valid')
-else:
-    print('Access token is invalid')
 
 
 

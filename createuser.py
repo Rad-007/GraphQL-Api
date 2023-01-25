@@ -3,7 +3,10 @@
 import requests
 from datetime import datetime,timedelta
 
+from pymongo import MongoClient
 
+from engagement import engagement
+from likes_comment_share import like_share_comment
 
 
 
@@ -70,7 +73,64 @@ if __name__ == "__main__":
 
 
 
+app2 = Flask(__name__)
 
+@app2.route('/validate-token', methods=['POST'])
+
+def validate_token():
+    # Get the access token from the request body
+    access_token = request.json['access_token']
+
+    # Make a GET request to the Graph API to debug the access token
+    url = f'https://graph.facebook.com/debug_token?input_token={access_token}&access_token={access_token}'
+    response = requests.get(url)
+
+    # Get the JSON data from the response
+    data = response.json()
+
+    # Check if the access token is valid
+    if data['data']['is_valid']:
+        
+
+        url = "https://graph.facebook.com/v10.0/me?access_token=" + access_token
+
+        response = requests.get(url)
+
+        # Print the response from the API
+        data=response.json()
+        print(data)
+
+        user_id =data['id']
+
+        url="https://graph.facebook.com/"+user_id+"metadata=1&access_token="+access_token
+
+        response=requests.get(url)
+
+        data2=response.json()
+
+        print(data2)
+
+
+
+        client = MongoClient()
+
+    # Select the database
+        db = client.user_database
+
+        # Create a new collection (table) storing name and account id in MongoDB
+        users = db.users
+        users.insert_one(data)
+        print('Valid token') 
+        engagement(user_id=user_id,access_token=access_token)
+        like_share_comment(user_id=user_id,access_token=access_token)
+        
+    
+
+    else:
+        return {'status': 'invalid'}
+
+if __name__ == '__main__':
+    app2.run(debug=True)
 
 
 
